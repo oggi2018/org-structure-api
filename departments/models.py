@@ -14,23 +14,23 @@ class Department(models.Model):
     )
 
     parent = models.ForeignKey(
-        "self",
+        'self',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name="children",
+        related_name='children',
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["name"]
+        ordering = ['name']
 
         constraints = [
             UniqueConstraint(
-                Lower("name"),
-                "parent",
-                name="unique_department_name_per_parent",
+                Lower('name'),
+                'parent',
+                name='unique_department_name_per_parent',
             ),
         ]
 
@@ -46,7 +46,7 @@ class Employee(models.Model):
     department = models.ForeignKey(
         Department,
         on_delete=models.CASCADE,
-        related_name="employees",
+        related_name='employees',
     )
 
     full_name = models.CharField(
@@ -73,7 +73,7 @@ class Employee(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["full_name"]
+        ordering = ['full_name']
 
     def save(self, *args, **kwargs):
         self.full_name = self.full_name.strip()
