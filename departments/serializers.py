@@ -18,7 +18,7 @@ DELETE_MODE_REQUIRED_ERROR = 'Некорректный режим удалени
 REASSIGN_DEPARTMENT_REQUIRED_ERROR = 'reassign_to_department_id обязателен'
 
 
-class DepParentMixin:
+class DepartmentParentIdMixin(serializers.Serializer):
     parent_id = serializers.PrimaryKeyRelatedField(
         source='parent',
         queryset=Department.objects.all(),
@@ -27,8 +27,10 @@ class DepParentMixin:
     )
 
 
-class DepartmentCreateSerializer(DepParentMixin, serializers.ModelSerializer):
-
+class DepartmentCreateSerializer(
+    DepartmentParentIdMixin,
+    serializers.ModelSerializer
+):
     class Meta:
         model = Department
         fields = ['id', 'name', 'parent_id', 'created_at']
@@ -71,7 +73,10 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         return value
 
 
-class DepartmentUpdateSerializer(DepParentMixin, serializers.ModelSerializer):
+class DepartmentUpdateSerializer(
+    DepartmentParentIdMixin,
+    serializers.ModelSerializer
+):
     class Meta:
         model = Department
         fields = ['name', 'parent_id']
