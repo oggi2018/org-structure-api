@@ -6,12 +6,19 @@ from rest_framework.views import APIView
 from .models import Department
 from .selectors import build_department_tree
 from .serializers import (
+    DELETE_MODE_CASCADE,
+    DELETE_MODE_REASSIGN,
     DepartmentCreateSerializer,
     DepartmentTreeQuerySerializer,
     EmployeeCreateSerializer,
     DepartmentUpdateSerializer,
+    DepartmentDeleteQuerySerializer,
 )
-from .services import validate_department_parent
+from .services import (
+    delete_department_cascade,
+    delete_department_reassign,
+    validate_department_parent,
+)
 
 
 class DepartmentCreateView(APIView):
@@ -74,3 +81,23 @@ class DepartmentDetailView(APIView):
         )
         department = serializer.save()
         return Response(DepartmentCreateSerializer(department).data)
+
+    def delete(self, request, department_id):
+        department = get_object_or_404(Department, id=department_id)
+        query_serializer = DepartmentDeleteQuerySerializer(
+            data=request.query_params,
+        )
+        query_serializer.is_valid(raise_exception=True)
+        mode = query_serializer.validated_data['mode']
+        if mode == DELETE_MODE_CASCADE:
+            delete_department_cascade(department)
+        elif mode == DELETE_MODE_REASSIGN:
+            reassign_to_department = get_object_or_404(
+                Department,
+                id=query_serializer.validated_data['reassign_to_department_id']
+            )
+            delete_department_reassign(
+                department=department,
+                reassign_to_department=reassign_to_department,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
