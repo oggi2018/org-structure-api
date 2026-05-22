@@ -38,4 +38,3 @@ def department_employee(db, department):
         full_name='Диззи Гиллеспи',
         position='Backend разработчик',
     )
-
