@@ -3,13 +3,16 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.db.models.functions import Lower
 
+MIN_TEXT_LENGTH = 1
+MAX_TEXT_LENGTH = 200
+
 
 class Department(models.Model):
     name = models.CharField(
-        max_length=200,
+        max_length=MAX_TEXT_LENGTH,
         validators=[
-            MinLengthValidator(1),
-            MaxLengthValidator(200),
+            MinLengthValidator(MIN_TEXT_LENGTH),
+            MaxLengthValidator(MAX_TEXT_LENGTH),
         ],
     )
 
@@ -50,18 +53,18 @@ class Employee(models.Model):
     )
 
     full_name = models.CharField(
-        max_length=200,
+        max_length=MAX_TEXT_LENGTH,
         validators=[
-            MinLengthValidator(1),
-            MaxLengthValidator(200),
+            MinLengthValidator(MIN_TEXT_LENGTH),
+            MaxLengthValidator(MAX_TEXT_LENGTH),
         ],
     )
 
     position = models.CharField(
-        max_length=200,
+        max_length=MAX_TEXT_LENGTH,
         validators=[
-            MinLengthValidator(1),
-            MaxLengthValidator(200),
+            MinLengthValidator(MIN_TEXT_LENGTH),
+            MaxLengthValidator(MAX_TEXT_LENGTH),
         ],
     )
 

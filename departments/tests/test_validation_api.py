@@ -1,5 +1,7 @@
 import pytest
 
+from departments.models import MAX_TEXT_LENGTH
+
 
 @pytest.mark.django_db
 def test_create_department_with_empty_name(api_client):
@@ -110,4 +112,51 @@ def test_create_employee_with_blank_fields(api_client, department):
 
     assert response.status_code == 400
     assert 'full_name' in response.data
+    assert 'position' in response.data
+
+
+@pytest.mark.django_db
+def test_create_department_with_too_long_name(api_client):
+    """Ошибка при создании подразделения со слишком длинным названием."""
+    response = api_client.post(
+        '/departments/',
+        {
+            'name': 'A' * (MAX_TEXT_LENGTH + 1),
+        },
+        format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'name' in response.data
+
+
+@pytest.mark.django_db
+def test_create_employee_with_too_long_full_name(api_client, department):
+    """Ошибка при создании сотрудника со слишком длинным full_name."""
+    response = api_client.post(
+        f'/departments/{department.id}/employees/',
+        {
+            'full_name': 'A' * (MAX_TEXT_LENGTH + 1),
+            'position': 'Backend разработчик',
+        },
+        format='json',
+    )
+
+    assert response.status_code == 400
+    assert 'full_name' in response.data
+
+
+@pytest.mark.django_db
+def test_create_employee_with_too_long_position(api_client, department):
+    """Ошибка при создании сотрудника со слишком длинным position."""
+    response = api_client.post(
+        f'/departments/{department.id}/employees/',
+        {
+            'full_name': 'Диззи Гиллеспи',
+            'position': 'A' * (MAX_TEXT_LENGTH + 1),
+        },
+        format='json',
+    )
+
+    assert response.status_code == 400
     assert 'position' in response.data
