@@ -4,7 +4,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Department
-from .serializers import DepartmentCreateSerializer, EmployeeCreateSerializer
+from .selectors import build_department_tree
+from .serializers import (
+    DepartmentCreateSerializer,
+    DepartmentTreeQuerySerializer,
+    EmployeeCreateSerializer,
+)
 
 
 class DepartmentCreateView(APIView):
@@ -31,3 +36,20 @@ class EmployeeCreateView(APIView):
             EmployeeCreateSerializer(employee).data,
             status=status.HTTP_201_CREATED,
         )
+
+
+class DepartmentDetailView(APIView):
+    def get(self, request, department_id):
+        department = get_object_or_404(Department, id=department_id)
+        query_serializer = DepartmentTreeQuerySerializer(
+            data=request.query_params,
+        )
+        query_serializer.is_valid(raise_exception=True)
+        data = build_department_tree(
+            department=department,
+            depth=query_serializer.validated_data['depth'],
+            include_employees=query_serializer.validated_data[
+                'include_employees'
+            ],
+        )
+        return Response(data)

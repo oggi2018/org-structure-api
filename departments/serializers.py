@@ -7,6 +7,9 @@ DEPARTMENT_NAME_EMPTY = 'Название подразделения не мож
 DEPARTMENT_ALREADY_EXISTS = 'Подразделение с таким именем уже существует.'
 FULL_NAME_EMPTY = 'ФИО не может быть пустым.'
 POSITION_EMPTY = 'Должность не может быть пустой.'
+MAX_DEPARTMENT_DEPTH = 5
+DEFAULT_DEPARTMENT_DEPTH = 1
+MIN_DEPARTMENT_DEPTH = 0
 
 
 class DepartmentCreateSerializer(serializers.ModelSerializer):
@@ -72,3 +75,16 @@ class DepartmentUpdateSerializer(serializers.ModelSerializer):
         ).exclude(id=self.instance.id).exists():
             raise serializers.ValidationError(DEPARTMENT_ALREADY_EXISTS)
         return attrs
+
+
+class DepartmentTreeQuerySerializer(serializers.Serializer):
+    depth = serializers.IntegerField(
+        required=False,
+        default=DEFAULT_DEPARTMENT_DEPTH,
+        min_value=MIN_DEPARTMENT_DEPTH,
+        max_value=MAX_DEPARTMENT_DEPTH,
+    )
+    include_employees = serializers.BooleanField(
+        required=False,
+        default=True,
+    )
