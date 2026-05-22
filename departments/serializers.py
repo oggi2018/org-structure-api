@@ -18,10 +18,20 @@ DELETE_MODE_REQUIRED_ERROR = 'Некорректный режим удалени
 REASSIGN_DEPARTMENT_REQUIRED_ERROR = 'reassign_to_department_id обязателен'
 
 
-class DepartmentCreateSerializer(serializers.ModelSerializer):
+class DepParentMixin:
+    parent_id = serializers.PrimaryKeyRelatedField(
+        source='parent',
+        queryset=Department.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+
+
+class DepartmentCreateSerializer(DepParentMixin, serializers.ModelSerializer):
+
     class Meta:
         model = Department
-        fields = ['id', 'name', 'parent', 'created_at']
+        fields = ['id', 'name', 'parent_id', 'created_at']
         read_only_fields = ['id', 'created_at']
 
     def validate_name(self, value: str) -> str:
@@ -61,10 +71,10 @@ class EmployeeCreateSerializer(serializers.ModelSerializer):
         return value
 
 
-class DepartmentUpdateSerializer(serializers.ModelSerializer):
+class DepartmentUpdateSerializer(DepParentMixin, serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = ['name', 'parent']
+        fields = ['name', 'parent_id']
 
     def validate_name(self, value: str) -> str:
         value = value.strip()
