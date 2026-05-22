@@ -9,7 +9,9 @@ from .serializers import (
     DepartmentCreateSerializer,
     DepartmentTreeQuerySerializer,
     EmployeeCreateSerializer,
+    DepartmentUpdateSerializer,
 )
+from .services import validate_department_parent
 
 
 class DepartmentCreateView(APIView):
@@ -53,3 +55,22 @@ class DepartmentDetailView(APIView):
             ],
         )
         return Response(data)
+
+    def patch(self, request, department_id):
+        department = get_object_or_404(Department, id=department_id)
+        serializer = DepartmentUpdateSerializer(
+            department,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        new_parent = serializer.validated_data.get(
+            'parent',
+            department.parent,
+        )
+        validate_department_parent(
+            department=department,
+            new_parent=new_parent,
+        )
+        department = serializer.save()
+        return Response(DepartmentCreateSerializer(department).data)
