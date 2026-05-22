@@ -1,16 +1,11 @@
 import pytest
-from rest_framework.test import APIClient
-
-from departments.models import Department
 
 
 @pytest.mark.django_db
-def test_create_employee():
+def test_create_employee(api_client, department):
     """Создание сотрудника в существующем подразделении."""
-    client = APIClient()
-    department = Department.objects.create(name='Разработка')
 
-    response = client.post(
+    response = api_client.post(
         f'/departments/{department.id}/employees/',
         {
             'full_name': 'Диззи Гиллеспи',

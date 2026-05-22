@@ -1,15 +1,10 @@
 import pytest
-from rest_framework.test import APIClient
-
-from departments.models import Department, Employee
 
 
 @pytest.mark.django_db
-def test_create_department():
+def test_create_department(api_client):
     """Создание корневого подразделения без parent_id."""
-    client = APIClient()
-
-    response = client.post(
+    response = api_client.post(
         '/departments/',
         {
             'name': 'Отдел тестирования ПО',
@@ -23,45 +18,30 @@ def test_create_department():
 
 
 @pytest.mark.django_db
-def test_create_child_department():
+def test_create_child_department(api_client, department):
     """Создание дочернего подразделения с parent_id."""
-    client = APIClient()
-    parent = Department.objects.create(
-        name='Разработка',
-    )
-
-    response = client.post(
+    response = api_client.post(
         '/departments/',
         {
             'name': 'Backend',
-            'parent_id': parent.id,
+            'parent_id': department.id,
         },
         format='json',
     )
 
     assert response.status_code == 201
     assert response.data['name'] == 'Backend'
-    assert response.data['parent_id'] == parent.id
+    assert response.data['parent_id'] == department.id
 
 
 @pytest.mark.django_db
-def test_get_department_tree():
+def test_get_department_tree(
+    api_client, department,
+    child_department,
+    department_employee,
+):
     """Получение подразделения вместе с сотрудниками и дочерними отделами."""
-    client = APIClient()
-    department = Department.objects.create(
-        name='Разработка',
-    )
-    child = Department.objects.create(
-        name='Backend',
-        parent=department,
-    )
-    Employee.objects.create(
-        department=department,
-        full_name='Диззи Гиллеспи',
-        position='Backend разработчик',
-    )
-
-    response = client.get(f'/departments/{department.id}/')
+    response = api_client.get(f'/departments/{department.id}/')
 
     assert response.status_code == 200
     assert response.data['department']['id'] == department.id
@@ -69,16 +49,16 @@ def test_get_department_tree():
     assert len(response.data['employees']) == 1
     assert response.data['employees'][0]['full_name'] == 'Диззи Гиллеспи'
     assert len(response.data['children']) == 1
-    assert response.data['children'][0]['department']['id'] == child.id
+    assert (
+        response.data['children'][0]['department']['id']
+        == child_department.id
+    )
 
 
 @pytest.mark.django_db
-def test_rename_department():
+def test_rename_department(api_client, department):
     """Изменение названия подразделения."""
-    client = APIClient()
-    department = Department.objects.create(name='Разработка')
-
-    response = client.patch(
+    response = api_client.patch(
         f'/departments/{department.id}/',
         {
             'name': 'Backend',
@@ -92,21 +72,21 @@ def test_rename_department():
 
 
 @pytest.mark.django_db
-def test_move_department_to_another_parent():
+def test_move_department_to_another_parent(
+    api_client,
+    parent_department,
+    department,
+):
     """Перемещение подразделения в другой родительский отдел."""
-    client = APIClient()
-    root = Department.objects.create(name='Компания')
-    department = Department.objects.create(name='Разработка')
-
-    response = client.patch(
+    response = api_client.patch(
         f'/departments/{department.id}/',
         {
-            'parent_id': root.id,
+            'parent_id': parent_department.id,
         },
         format='json',
     )
     department.refresh_from_db()
 
     assert response.status_code == 200
-    assert response.data['parent_id'] == root.id
-    assert department.parent_id == root.id
+    assert response.data['parent_id'] == parent_department.id
+    assert department.parent_id == parent_department.id
