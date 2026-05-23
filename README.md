@@ -22,17 +22,8 @@ cd org-structure-api
 
 ### 2. Создать .env
 
-Пример:
-
-```env
-SECRET_KEY=django-secret-key
-DEBUG=True
-
-POSTGRES_DB=org_structure
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
+```bash
+cp .env.example .env
 ```
 
 ### 3. Запуск контейнеров

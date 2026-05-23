@@ -46,7 +46,7 @@ class DepartmentCreateSerializer(
         name = attrs.get('name')
         parent = attrs.get('parent')
         if Department.objects.filter(
-            name=name,
+            name__iexact=name,
             parent=parent,
         ).exists():
             raise serializers.ValidationError(DEPARTMENT_ALREADY_EXISTS)
@@ -91,7 +91,7 @@ class DepartmentUpdateSerializer(
         name = attrs.get('name', self.instance.name)
         parent = attrs.get('parent', self.instance.parent)
         if Department.objects.filter(
-            name=name,
+            name__iexact=name,
             parent=parent,
         ).exclude(id=self.instance.id).exists():
             raise serializers.ValidationError(DEPARTMENT_ALREADY_EXISTS)
