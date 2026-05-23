@@ -65,6 +65,7 @@ def test_create_same_department_name_in_another_parent(
 
     assert response.status_code == 201
 
+
 @pytest.mark.django_db
 def test_create_employee_with_empty_full_name(api_client, department):
     """Ошибка при созданении сотрудника с пустым full_name."""
